@@ -54,8 +54,20 @@ public class MorseDecoder {
         double[] sampleBuffer = new double[BIN_SIZE * inputFile.getNumChannels()];
         for (int binIndex = 0; binIndex < totalBinCount; binIndex++) {
             // Get the right number of samples from the inputFile
+            int framesRead = inputFile.readFrames(sampleBuffer, BIN_SIZE);
             // Sum all the samples together and store them in the returnBuffer
+            returnBuffer[binIndex] = 0;
+            for (int sampleCount = 0; sampleCount < sampleBuffer.length; sampleCount++) {
+                returnBuffer[binIndex] += Math.abs(sampleBuffer[sampleCount]);
+            }
+            if (framesRead < BIN_SIZE) {
+                throw new RuntimeException("short");
+            }
         }
+        for (double data:returnBuffer) {
+            System.out.println(data);
+        }
+
         return returnBuffer;
     }
 
@@ -63,7 +75,7 @@ public class MorseDecoder {
     private static final double POWER_THRESHOLD = 10;
 
     /** Bin threshold for dots or dashes. Related to BIN_SIZE. You may need to modify this value. */
-    private static final int DASH_BIN_COUNT = 8;
+    private static final int DASH_BIN_COUNT = 10;
 
     /**
      * Convert power measurements to dots, dashes, and spaces.
@@ -81,13 +93,42 @@ public class MorseDecoder {
          * There are four conditions to handle. Symbols should only be output when you see
          * transitions. You will also have to store how much power or silence you have seen.
          */
+        String dotDash = "";
+        boolean ispower, waspower, issilence, wassilence;
+        int binCount = 0;
+        int siCount = 0;
+        waspower = true;
+        wassilence = true;
+        for (double power : powerMeasurements) {
+            ispower = power > POWER_THRESHOLD;
+            issilence = power < POWER_THRESHOLD;
+            if (ispower && waspower) {
+                binCount += 1;
+            } else if (ispower && !waspower) {
+                if (siCount > DASH_BIN_COUNT) {
+                    dotDash += " ";
+                }
+                siCount = 1;
+            } else if (issilence && wassilence) {
+                siCount += 1;
+            } else if (issilence && !wassilence) {
+                if (binCount > DASH_BIN_COUNT) {
+                    dotDash += "-";
+                } else {
+                    dotDash += ".";
+                }
+                binCount = 1;
+            }
+            // if ispower and waspower
+            // else if ispower and not waspower
 
-        // if ispower and waspower
-        // else if ispower and not waspower
-        // else if issilence and wassilence
-        // else if issilence and not wassilence
+            // else if issilence and wassilence
+            // else if issilence and not wassilence
+            waspower = ispower;
+            wassilence = issilence;
+        }
 
-        return "";
+        return dotDash;
     }
 
     /**
