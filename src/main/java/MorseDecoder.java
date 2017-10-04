@@ -64,9 +64,6 @@ public class MorseDecoder {
                 throw new RuntimeException("short");
             }
         }
-        for (double data:returnBuffer) {
-            System.out.println(data);
-        }
 
         return returnBuffer;
     }
@@ -102,16 +99,16 @@ public class MorseDecoder {
         for (double power : powerMeasurements) {
             ispower = power > POWER_THRESHOLD;
             issilence = power < POWER_THRESHOLD;
-            if (ispower && waspower) {
+            if (ispower && waspower) {  // if ispower and waspower
                 binCount += 1;
-            } else if (ispower && !waspower) {
+            } else if (ispower && !waspower) {  // else if ispower and not waspower
                 if (siCount > DASH_BIN_COUNT) {
                     dotDash += " ";
                 }
                 siCount = 1;
-            } else if (issilence && wassilence) {
+            } else if (issilence && wassilence) {   // else if issilence and wassilence
                 siCount += 1;
-            } else if (issilence && !wassilence) {
+            } else if (issilence && !wassilence) {  // else if issilence and not wassilence
                 if (binCount > DASH_BIN_COUNT) {
                     dotDash += "-";
                 } else {
@@ -119,11 +116,6 @@ public class MorseDecoder {
                 }
                 binCount = 1;
             }
-            // if ispower and waspower
-            // else if ispower and not waspower
-
-            // else if issilence and wassilence
-            // else if issilence and not wassilence
             waspower = ispower;
             wassilence = issilence;
         }
